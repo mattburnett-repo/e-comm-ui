@@ -1,5 +1,5 @@
 const Item = {
-  id: 1,
+  id: '6c480ae2-bb04-11ed-afa1-0242ac120002',
   name: 'Renogy 100 Watts 12 Volts Monocrystalline Solar Starter Kit',
   description:
     'This kit includes a 100W solar panel, 30A PWM negative ground charge controller, and mounting brackets. It is designed for off-grid applications and can be used to power small appliances and electronics.',

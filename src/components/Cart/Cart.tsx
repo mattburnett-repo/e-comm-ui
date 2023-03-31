@@ -50,13 +50,9 @@ function Cart() {
     try {
       const stripe = await stripePromise
 
-      console.log('Cart before makeRequest')
-
       const res = await makeRequest.post('/order/create-stripe-order', {
         cartItems: data
       })
-
-      console.log('after makeRequest')
 
       await stripe?.redirectToCheckout({
         sessionId: res.data.stripeSession.id
