@@ -17,6 +17,9 @@ import { addToCart } from '../../redux/cartReducer'
 
 import './Product.scss'
 
+// Use the same default image as Card component
+const DEFAULT_IMAGE = '/img/green.svg'
+
 function Product() {
   const { id } = useParams()
 
@@ -26,7 +29,24 @@ function Product() {
   const dispatch = useDispatch()
   const { data, loading, error } = useFetch(`/product/id/${id}`)
 
-  const images = [(data as any).image_01_url, (data as any).image_02_url]
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    // Only set default image if it's not already trying to load it
+    if (!e.currentTarget.src.includes('green.svg')) {
+      e.currentTarget.src = DEFAULT_IMAGE
+    } else {
+      // If default image also fails, prevent further attempts
+      e.currentTarget.onerror = null
+    }
+  }
+
+  // Make sure we have data before trying to use it
+  const image1 = data
+    ? (data as any).image_01_url || DEFAULT_IMAGE
+    : DEFAULT_IMAGE
+  const image2 = data
+    ? (data as any).image_02_url || DEFAULT_IMAGE
+    : DEFAULT_IMAGE
+  const images = [image1, image2]
 
   return error ? (
     <ErrorFallback />
@@ -35,24 +55,30 @@ function Product() {
       <div className="left" role="presentation" aria-label="product-images">
         <div className="images">
           <img
-            src={(data as any).image_01_url}
-            alt=""
-            onClick={(e) => setSelectedImage(0)}
+            src={image1}
+            onError={handleImageError}
+            alt={(data as any)?.name || 'Product image'}
+            onClick={() => setSelectedImage(0)}
           />
           <img
-            src={(data as any).image_02_url}
-            alt=""
-            onClick={(e) => setSelectedImage(1)}
+            src={image2}
+            onError={handleImageError}
+            alt={(data as any)?.name || 'Product image'}
+            onClick={() => setSelectedImage(1)}
           />
         </div>
         <div className="mainImage">
-          <img src={images[selectedImage]} alt="" />
+          <img
+            src={images[selectedImage]}
+            onError={handleImageError}
+            alt={(data as any)?.name || 'Product image'}
+          />
         </div>
       </div>
       <div className="right" role="presentation" aria-label="product-detail">
-        <h1>{(data as any).name}</h1>
-        <span className="price">${(data as any).price}</span>
-        <p>{(data as any).description}</p>
+        <h1>{(data as any)?.name}</h1>
+        <span className="price">${(data as any)?.price}</span>
+        <p>{(data as any)?.description}</p>
         <div
           className="quantity"
           role="presentation"
@@ -69,7 +95,6 @@ function Product() {
             +
           </button>
         </div>
-        {/* FIXME: 'data as any'. This doesn't look right, but it works... */}
         <button
           type="button"
           className="add"
@@ -77,13 +102,13 @@ function Product() {
           onClick={() =>
             dispatch(
               addToCart({
-                product_id: (data as any).id,
-                name: (data as any).name,
-                description: (data as any).description,
-                image_01_url: (data as any).image_01_url,
-                price: (data as any).price,
+                product_id: (data as any)?.id,
+                name: (data as any)?.name,
+                description: (data as any)?.description,
+                image_01_url: image1, // Use the fallback-enabled image URL
+                price: (data as any)?.price,
                 productQuantity: quantity,
-                lineItemTotalPrice: quantity * (data as any).price
+                lineItemTotalPrice: quantity * (data as any)?.price
               })
             )
           }
