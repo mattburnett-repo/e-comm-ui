@@ -15,6 +15,9 @@ import { RootState } from '../../redux/store'
 import './Cart.scss'
 import makeRequest from '../../hooks/makeRequest'
 
+// Use the same default image as other components
+const DEFAULT_IMAGE = '/img/green.svg'
+
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_KEY)
 
 function Cart() {
@@ -22,6 +25,14 @@ function Cart() {
 
   // const data = useSelector((state: RootState) => state.cart.cartItems)
   const data = useSelector((state: RootState) => state.cart.cartItems)
+
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    if (!e.currentTarget.src.includes('green.svg')) {
+      e.currentTarget.src = DEFAULT_IMAGE
+    } else {
+      e.currentTarget.onerror = null
+    }
+  }
 
   const cartTotal = () => {
     let total = 0
@@ -50,8 +61,14 @@ function Cart() {
     try {
       const stripe = await stripePromise
 
+      // Ensure each cart item has a valid image URL
+      const cartItemsWithValidImages = data.map((item) => ({
+        ...item,
+        image_01_url: item.image_01_url || DEFAULT_IMAGE
+      }))
+
       const res = await makeRequest.post('/order/create-stripe-order', {
-        cartItems: data
+        cartItems: cartItemsWithValidImages
       })
 
       await stripe?.redirectToCheckout({
@@ -69,7 +86,11 @@ function Cart() {
       <h1>Products in your cart</h1>
       {data?.map((item: CartItem) => (
         <div className="item" key={item.product_id}>
-          <img src={item.image_01_url} alt="" />
+          <img
+            src={item.image_01_url || DEFAULT_IMAGE}
+            onError={handleImageError}
+            alt={item.name || 'Product image'}
+          />
           <div className="details">
             <h1>{item.name}</h1>
             <p>{item.description?.substring(0, 75)}...</p>
