@@ -21,9 +21,11 @@
     "jsx": "react-jsx"
   },
   "include": [
-    "vite.config.ts",
-    ".eslintrc.json",
     "src"
+  ],
+  "exclude": [
+    "node_modules",
+    "vite.config.ts"
   ],
   "references": [
     {
